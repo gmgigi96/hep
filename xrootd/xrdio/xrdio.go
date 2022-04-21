@@ -89,6 +89,22 @@ func OpenFrom(fs xrdfs.FileSystem, name string) (*File, error) {
 	return xf, nil
 }
 
+func OpenFromModeOptions(fs xrdfs.FileSystem, name string, mode xrdfs.OpenMode, options xrdfs.OpenOptions) (*File, error) {
+	f, err := fs.Open(context.Background(), name, mode, options)
+	if err != nil {
+		return nil, fmt.Errorf("xrdio: could not open %q: %w", name, err)
+	}
+
+	xf := &File{fs: fs, f: f, name: name}
+	fi, err := xf.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("xrdio: could not stat %q: %w", name, err)
+	}
+	xf.size = fi.Size()
+
+	return xf, nil
+}
+
 // Name returns the name of the file.
 func (f *File) Name() string {
 	return f.name
